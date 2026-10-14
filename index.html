@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Zero one</title>
+<meta name="theme-color" content="#0E2A33">
+<meta name="description" content="Daily news, markets, Guwahati weather and a run tracker.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--ink:#0E2A33;--mist:#E3ECEA;--paper:#F7F9F8;--tea:#2F6B4F;--red:#C62828;--mut:#5E747A;--line:#D3DFDD}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--paper)}
+body{font-family:"Avenir Next","Segoe UI",Roboto,system-ui,sans-serif;color:var(--ink);overscroll-behavior-y:contain}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--tea);outline-offset:2px}
+a{color:inherit;text-decoration:none}
+#app{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 18px 6px}
+.logo{width:32px;height:32px;border-radius:50%;border:2.5px solid var(--red);display:grid;place-items:center;font-weight:800;font-size:12px;letter-spacing:-.5px}
+.brand{font-weight:700;font-size:18px;letter-spacing:-.2px}
+.grow{flex:1}
+.icon-btn{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--mut)}
+.main{flex:1;padding:6px 18px 24px}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:700;font-size:34px;line-height:1.05;margin:10px 0 2px;letter-spacing:-.5px}
+h2{font-size:17px;margin:22px 0 8px;font-weight:700}
+.sub{color:var(--mut);font-size:14px}
+.hero{background:var(--ink);color:#F2F7F6;border-radius:20px;padding:18px;margin-top:10px}
+.hero .sub{color:#A9C0C4}
+.hero-row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.temp{font-family:Georgia,serif;font-size:52px;line-height:1;font-weight:700}
+.item{padding:13px 0;border-bottom:1px solid var(--line);display:block}
+.item b{display:block;font-size:15.5px;line-height:1.3;font-weight:650}
+.meta{font-size:12.5px;color:var(--mut);margin-top:5px}
+.tag{font-size:12px;font-weight:650;color:var(--tea);margin-right:6px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:9px 14px;border-radius:999px;border:1.5px solid var(--line);font-size:14px;font-weight:600;color:var(--mut)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+nav{position:sticky;bottom:0;display:flex;background:#fff;border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:11.5px;font-weight:600;color:var(--mut)}
+nav button.on{color:var(--red)}
+.btn{background:var(--tea);color:#fff;border-radius:14px;padding:14px 18px;font-weight:700;font-size:16px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn svg.i{width:20px;height:20px}
+.btn.red{background:var(--red)}.btn.ghost{background:var(--mist);color:var(--ink)}.btn.block{width:100%}
+.row{display:flex;gap:10px}
+.stats{display:grid;grid-template-columns:1fr 1fr;margin-top:14px;border-top:1px solid var(--line)}
+.stat{padding:14px 4px;border-bottom:1px solid var(--line)}
+.stat:nth-child(odd){border-right:1px solid var(--line);padding-right:12px}
+.stat:nth-child(even){padding-left:16px}
+.stat .v{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.stat .l{font-size:12.5px;color:var(--mut)}
+.big{font-family:Georgia,serif;font-size:58px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.note{background:var(--mist);border-radius:12px;padding:11px 13px;font-size:13.5px;line-height:1.4;margin:10px 0}
+.alert{border-left:4px solid var(--red);background:#FBEDED;padding:10px 12px;border-radius:0 10px 10px 0;margin:8px 0;font-size:14px}
+.err{color:var(--red);font-size:14px;padding:14px 0}
+.skel{height:14px;border-radius:7px;background:var(--mist);margin:14px 0}
+.field{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);gap:12px}
+.switch{width:48px;height:28px;border-radius:999px;background:var(--line);position:relative;flex:none}
+.switch.on{background:var(--tea)}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch.on::after{transform:translateX(20px)}
+input[type=time],input[type=number],input[type=date]{font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:#fff;width:110px}
+.up{color:var(--tea)}.down{color:var(--red)}
+.pb{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.pb b{font-variant-numeric:tabular-nums}
+.ring{position:relative;flex:none}
+.ring>div{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.bg{position:fixed;inset:0;background:rgba(14,42,51,.55);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.sheet{background:var(--paper);width:100%;max-width:480px;max-height:90vh;max-height:90dvh;overflow-y:auto;border-radius:22px 22px 0 0;padding:10px 20px calc(20px + env(safe-area-inset-bottom));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 14px}
+.qt{font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:1.3;font-weight:700;margin:10px 0 16px;letter-spacing:-.2px}
+.qrow{padding:12px 0;border-top:1px solid var(--line);font-size:15px;line-height:1.45}
+.ql{font-weight:700;color:var(--tea);font-size:13.5px;margin-bottom:3px}
+.bg.full{background:var(--paper);align-items:stretch}
+.sheet.full{max-height:none;height:100%;border-radius:0;padding-top:calc(10px + env(safe-area-inset-top));animation:none}
+.srow{display:flex;align-items:center;gap:4px}
+.srow input{flex:1;font:inherit;font-size:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;background:#fff;min-width:0;width:auto}
+.ans{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;overflow:hidden}
+.ans p{margin:6px 0 12px;font-size:14.5px;line-height:1.5}
+.ans img{float:right;width:84px;height:84px;object-fit:cover;border-radius:10px;margin:0 0 8px 12px}
+input[type=date]{width:150px!important}
+.pbar{height:6px;background:var(--mist);border-radius:3px;overflow:hidden;margin:4px 0 6px}
+.pbar i{display:block;height:100%;background:var(--tea)}
+.subj{border-bottom:1px solid var(--line);padding:4px 0}
+.shead{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;text-align:left;padding:10px 0}
+.shead b{font-size:16.5px;line-height:1.25}
+.chev{font-size:24px;color:var(--mut);line-height:1}
+.trow{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.tb{flex:1;min-width:0}.tb b{font-size:15px;font-weight:650;line-height:1.3}
+.chk{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;color:#fff;margin-top:1px}
+.chk.on{background:var(--tea);border-color:var(--tea)}
+.chk svg.i{width:16px;height:16px;stroke-width:3}
+.pbtn{width:42px;height:42px;border-radius:50%;background:var(--mist);display:grid;place-items:center;flex:none;color:var(--tea)}
+.pbtn svg.i{width:18px;height:18px}
+.tring{position:relative;width:240px;height:240px;margin:12px auto 6px}
+.tring>svg{position:absolute;inset:0}
+.tin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 30px}
+.tpill{padding:6px 10px;color:var(--red);border-color:var(--red);font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="sheet"></div>
+<script>
+"use strict";
+/* ============ helpers ============ */
+const KEY = "zero-one-v1";
+const DEF = { topics: ["Assam", "Northeast", "Markets", "India", "World"], notify: false, notifyTime: "07:00", goalKm: 3.2, weight: 65, lastNotified: "", recent: [], lastQuote: "", tmWake: true };
+const TOPICS = ["Assam", "Northeast", "India", "Markets", "Business", "World", "Sports", "Tech"];
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pad = n => String(n).padStart(2, "0");
+const fmtDur = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60; return h ? `${h}:${pad(m)}:${pad(x)}` : `${pad(m)}:${pad(x)}`; };
+const fmtPace = p => (!p || !isFinite(p) || p > 3600 ? "--:--" : `${Math.floor(p / 60)}:${pad(Math.round(p % 60))}`);
+const km = m => (m / 1000).toFixed(2);
+const sample = (a, n) => (a.length <= n ? a : a.filter((_, i) => i % Math.ceil(a.length / n) === 0));
+const sameDay = (a, b) => a.toDateString() === b.toDateString();
+const hav = (a, b) => { const r = x => x * Math.PI / 180, dl = r(b.lat - a.lat), dg = r(b.lng - a.lng); const h = Math.sin(dl / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dg / 2) ** 2; return 12742000 * Math.asin(Math.sqrt(h)); };
+const ago = d => { const m = Math.round((Date.now() - new Date(d)) / 60000); if (!(m >= 0)) return ""; return m < 60 ? `${Math.max(m, 1)} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`; };
+
+const IC = {
+  home: '<path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/>',
+  news: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  cloud: '<circle cx="8" cy="8" r="3"/><path d="M8 2v1M2 8h1M3.8 3.8l.7.7M12.2 3.8l-.7.7"/><path d="M8 20h9a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.5 1.5A3.2 3.2 0 0 0 8 20z"/>',
+  run: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  sliders: '<path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2.2"/><circle cx="9" cy="12" r="2.2"/><circle cx="17" cy="18" r="2.2"/>',
+  refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>',
+  play: '<path d="M7 4v16l13-8z" fill="currentColor"/>',
+  pause: '<rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/>',
+  stop: '<rect x="5" y="5" width="14" height="14" rx="2" fill="currentColor"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  quote: '<path d="M7 7h4v5c0 3-2 5-4 5M15 7h4v5c0 3-2 5-4 5"/>',
+  close: '<path d="M6 6l12 12M18 6 6 18"/>',
+  book: '<path d="M5 3h13a1 1 0 0 1 1 1v15H6a2 2 0 0 0-2 2V4a1 1 0 0 1 1-1z"/><path d="M8 7h7M8 11h5"/>',
+  check: '<path d="m5 12 5 5 9-10"/>',
+  up: '<path d="m4 15 5-5 4 4 7-7"/>', down: '<path d="m4 9 5 5 4-4 7 7"/>',
+};
+const ico = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
+
+/* ============ storage ============ */
+function load() {
+  const ST = { done: {}, spent: {}, hours: 4, examDate: "" };
+  try { const j = JSON.parse(localStorage.getItem(KEY)) || {}; return { prefs: { ...DEF, ...(j.prefs || {}) }, runs: j.runs || [], cache: j.cache || {}, study: { ...ST, ...(j.study || {}) }, timer: j.timer || null }; }
+  catch (e) { return { prefs: { ...DEF }, runs: [], cache: {}, study: ST, timer: null }; }
+}
+let D = load();
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} };
+let S = { stab: "syllabus", subj: null, sheet: null, sid: 0, sr: null, toast: "", tab: "home", news: "national", runView: "track", mode: "gps", mult: 1, open: null, msg: "", gpsMsg: "" };
+const L = {}, E = {};
+
+/* ============ data: news ============ */
+const gn = p => `https://news.google.com/rss/${p}${p.includes("?") ? "&" : "?"}hl=en-IN&gl=IN&ceid=IN:en`;
+const gs = q => gn("search?q=" + encodeURIComponent(q));
+const FEEDS = {
+  India: gn("headlines/section/topic/NATION"), World: gn("headlines/section/topic/WORLD"),
+  Business: gn("headlines/section/topic/BUSINESS"), Sports: gn("headlines/section/topic/SPORTS"), Tech: gn("headlines/section/topic/TECHNOLOGY"),
+  Assam: gs("Assam OR Guwahati when:2d"),
+  Northeast: gs('"Northeast India" OR Meghalaya OR Manipur OR Nagaland OR Tripura OR Mizoram OR Arunachal when:2d'),
+  Markets: gs("Sensex OR Nifty OR NSE OR BSE stocks when:1d"),
+};
+const NEWS_TABS = { national: ["India"], ne: ["Assam", "Northeast"], mkt: ["Markets", "Business"], world: ["World"] };
+const splitTitle = (t, src) => { const k = t.lastIndexOf(" - "); if (k > 0) { if (!src) src = t.slice(k + 3); t = t.slice(0, k); } return { title: t.trim(), source: (src || "").trim() }; };
+
+async function fetchRss(url) {
+  const proxies = ["https://api.allorigins.win/raw?url=", "https://corsproxy.io/?"];
+  for (const p of proxies) {
+    try {
+      const r = await fetch(p + encodeURIComponent(url)); if (!r.ok) continue;
+      const x = new DOMParser().parseFromString(await r.text(), "text/xml");
+      const items = [...x.querySelectorAll("item")].slice(0, 8).map(i => {
+        const t = splitTitle(i.querySelector("title")?.textContent || "", i.querySelector("source")?.textContent || "");
+        return { ...t, link: i.querySelector("link")?.textContent || "", time: i.querySelector("pubDate")?.textContent || "" };
+      }).filter(i => i.title);
+      if (items.length) return items;
+    } catch (e) {}
+  }
+  try {
+    const j = await (await fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(url))).json();
+    if (j.items && j.items.length) return j.items.slice(0, 8).map(i => ({ ...splitTitle(i.title || "", ""), link: i.link, time: i.pubDate }));
+  } catch (e) {}
+  throw new Error("feed");
+}
+
+async function loadFeed(topic, force) {
+  const key = "f:" + topic, c = D.cache[key];
+  if (L[key] || (!force && c && Date.now() - c.at < 10 * 60000)) return;
+  L[key] = true; E[key] = false; render(true);
+  try { D.cache[key] = { at: Date.now(), items: await fetchRss(FEEDS[topic]) }; save(); }
+  catch (e) { E[key] = true; }
+  L[key] = false; render(true);
+}
+
+async function loadIdx(force) {
+  const c = D.cache.idx;
+  if (L.idx || (!force && c && Date.now() - c.at < 5 * 60000)) return;
+  L.idx = true;
+  const syms = [["Sensex", "%5EBSESN"], ["Nifty 50", "%5ENSEI"], ["Bank Nifty", "%5ENSEBANK"]];
+  const out = [];
+  for (const [name, s] of syms) {
+    const u = `https://query1.finance.yahoo.com/v8/finance/chart/${s}?interval=1d&range=1d`;
+    for (const t of [u, "https://api.allorigins.win/raw?url=" + encodeURIComponent(u)]) {
+      try {
+        const m = (await (await fetch(t)).json()).chart.result[0].meta;
+        const p = m.regularMarketPrice, prev = m.chartPreviousClose || m.previousClose;
+        out.push({ name, value: p.toLocaleString("en-IN", { maximumFractionDigits: 2 }), pct: prev ? ((p - prev) / prev) * 100 : 0 });
+        break;
+      } catch (e) {}
+    }
+  }
+  if (out.length) { D.cache.idx = { at: Date.now(), data: out }; save(); }
+  L.idx = false; render(true);
+}
+
+/* ============ data: weather ============ */
+const WX = c => c === 0 ? "Clear sky" : c <= 3 ? "Partly cloudy" : c <= 48 ? "Fog" : c <= 57 ? "Drizzle" : c <= 67 ? "Rain" : c <= 77 ? "Snow" : c <= 82 ? "Rain showers" : c >= 95 ? "Thunderstorm" : "Cloudy";
+async function loadWx(force) {
+  const c = D.cache.wx;
+  if (L.wx || (!force && c && Date.now() - c.at < 15 * 60000)) return;
+  L.wx = true; E.wx = false; render(true);
+  try {
+    const u = "https://api.open-meteo.com/v1/forecast?latitude=26.1445&longitude=91.7362&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum&timezone=Asia%2FKolkata&forecast_days=5";
+    D.cache.wx = { at: Date.now(), data: await (await fetch(u)).json() }; save();
+    if (!D.cache.wx.data.current) throw 0;
+  } catch (e) { E.wx = true; }
+  L.wx = false; render(true);
+}
+function wxAlerts(w) {
+  const a = [], d = w.daily;
+  d.time.forEach((t, i) => {
+    const day = i === 0 ? "Today" : new Date(t + "T00:00:00").toLocaleDateString("en-IN", { weekday: "long" });
+    if (d.precipitation_sum[i] >= 65) a.push(`Heavy rain likely ${day.toLowerCase()}: about ${Math.round(d.precipitation_sum[i])} mm expected.`);
+    else if (d.precipitation_sum[i] >= 25 && d.precipitation_probability_max[i] >= 60) a.push(`Rain likely ${day.toLowerCase()}: about ${Math.round(d.precipitation_sum[i])} mm expected.`);
+    if (d.weather_code[i] >= 95) a.push(`Thunderstorms possible ${day.toLowerCase()}.`);
+    if (d.temperature_2m_max[i] >= 37) a.push(`Very hot ${day.toLowerCase()}: up to ${Math.round(d.temperature_2m_max[i])}°C.`);
+  });
+  return a;
+}
+
+/* ============ run engine ============ */
+const fresh = () => ({ status: "idle", elapsed: 0, dist: 0, pts: [], win: [], t3200: null, last: null, mode: "gps", mult: 1, sim: null, saved: null, base: 0, t0: 0 });
+let R = fresh(), timer = null, watchId = null, wake = null;
+
+function push(lat, lng, acc) {
+  const d = R; if (d.status !== "running") return;
+  if (acc && acc > 40) return;
+  if (d.last) { const m = hav(d.last, { lat, lng }); if (m < 3 || m > 200) return; d.dist += m; }
+  d.last = { lat, lng }; d.pts.push({ lat, lng });
+  if (d.dist >= 3200 && d.t3200 == null) d.t3200 = d.elapsed;
+}
+function simStep() {
+  const s = R.sim; s.h += 0.012 + (Math.random() - 0.5) * 0.01;
+  const v = 2.7 + Math.random() * 0.5;
+  s.lat += v * Math.sin(s.h) / 111320; s.lng += v * Math.cos(s.h) / (111320 * Math.cos(s.lat * Math.PI / 180));
+  push(s.lat, s.lng);
+}
+function winPush() { const d = R; d.win.push({ t: d.elapsed, dist: d.dist }); while (d.win.length && d.win[0].t < d.elapsed - 20) d.win.shift(); }
+function tick() {
+  const d = R;
+  if (d.mode === "demo") { for (let i = 0; i < d.mult; i++) { d.elapsed++; simStep(); winPush(); } }
+  else { d.elapsed = Math.floor(d.base + (Date.now() - d.t0) / 1000); winPush(); }
+  updateLive();
+}
+function startGps() {
+  if (!navigator.geolocation) { S.gpsMsg = "This device doesn't offer GPS here. Try a demo run."; return; }
+  watchId = navigator.geolocation.watchPosition(
+    p => { S.gpsMsg = ""; push(p.coords.latitude, p.coords.longitude, p.coords.accuracy); updateLive(); },
+    e => { S.gpsMsg = e.code === 1 ? "Location permission is off. Allow location for Zero one in Android settings, then start again." : "Waiting for a GPS fix. Move to open sky."; updateLive(); },
+    { enableHighAccuracy: true, maximumAge: 1000 }
+  );
+}
+function stopSensors() { clearInterval(timer); if (watchId != null) navigator.geolocation.clearWatch(watchId); watchId = null; releaseWake(); }
+async function lockScreen() { try { wake = await navigator.wakeLock.request("screen"); } catch (e) {} }
+function releaseWake() { try { wake && wake.release(); } catch (e) {} wake = null; }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && R.status === "running") lockScreen(); checkReminder(); timerTick(); });
+
+function begin() {
+  R = fresh(); R.status = "running"; R.mode = S.mode; R.mult = S.mult; R.t0 = Date.now(); S.gpsMsg = "";
+  if (R.mode === "gps") startGps(); else { R.sim = { lat: 26.1445, lng: 91.7362, h: 0 }; push(R.sim.lat, R.sim.lng); }
+  timer = setInterval(tick, 1000); lockScreen(); render();
+}
+function pause() { stopSensors(); R.status = "paused"; render(); }
+function resume() { R.status = "running"; R.last = null; R.base = R.elapsed; R.t0 = Date.now(); if (R.mode === "gps") startGps(); timer = setInterval(tick, 1000); lockScreen(); render(); }
+function finish() {
+  stopSensors(); const d = R; d.status = "done";
+  if (d.elapsed >= 5 && d.dist >= 10) {
+    const run = { id: Date.now(), date: new Date().toISOString(), dist: d.dist, dur: d.elapsed, cal: Math.round(1.036 * D.prefs.weight * d.dist / 1000), t3200: d.t3200, demo: d.mode === "demo", pts: sample(d.pts, 120) };
+    d.saved = run; D.runs.unshift(run); save();
+  }
+  render();
+}
+
+/* ============ views ============ */
+function chips(opts, val, act) { return `<div class="chips">${opts.map(o => `<button class="chip${String(val) === String(o[0]) ? " on" : ""}" data-act="${act}" data-v="${o[0]}">${esc(o[1])}</button>`).join("")}</div>`; }
+const skel = () => [95, 86, 77, 68, 59].map(w => `<div class="skel" style="width:${w}%"></div>`).join("");
+
+function routeMap(pts, h = 200) {
+  const W = 320;
+  if (!pts || pts.length < 2) return `<div style="height:${h}px;background:var(--mist);border-radius:16px;display:grid;place-items:center;color:var(--mut);font-size:14px">Your route will appear here</div>`;
+  const k = Math.cos(pts[0].lat * Math.PI / 180), xy = pts.map(p => ({ x: p.lng * k, y: -p.lat }));
+  const xs = xy.map(p => p.x), ys = xy.map(p => p.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const pd = 18, s = Math.min((W - pd * 2) / (x1 - x0 || 1e-9), (h - pd * 2) / (y1 - y0 || 1e-9));
+  const ox = (W - (x1 - x0) * s) / 2, oy = (h - (y1 - y0) * s) / 2;
+  const P = xy.map(p => [ox + (p.x - x0) * s, oy + (p.y - y0) * s]);
+  return `<svg viewBox="0 0 ${W} ${h}" width="100%" style="background:var(--mist);border-radius:16px;display:block" role="img" aria-label="Run route map"><polyline points="${P.map(p => p.map(v => v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="#0E2A33" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${P[0][0]}" cy="${P[0][1]}" r="6" fill="#2F6B4F" stroke="#fff" stroke-width="2"/><circle cx="${P[P.length - 1][0]}" cy="${P[P.length - 1][1]}" r="6" fill="#C62828" stroke="#fff" stroke-width="2"/></svg>`;
+}
+function ring(v, size, inner) {
+  const r = size / 2 - 9, c = 2 * Math.PI * r, p = Math.max(0, Math.min(1, v));
+  return `<div class="ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}" style="transform:rotate(-90deg)"><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="#E3ECEA" stroke-width="10"/><circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${p >= 1 ? "#2F6B4F" : "#C62828"}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - p)}"/></svg><div>${inner}</div></div>`;
+}
+
+function mergeItems(topics, max) {
+  const lists = topics.map(t => (D.cache["f:" + t]?.items || []).map(i => ({ ...i, tag: t })));
+  const out = [], seen = new Set();
+  for (let i = 0; i < 10 && out.length < max; i++) for (const l of lists) { const it = l[i]; if (it && !seen.has(it.title) && out.length < max) { seen.add(it.title); out.push(it); } }
+  return out;
+}
+const item = (it, showTag) => `<a class="item" href="${esc(it.link)}" target="_blank" rel="noopener"><b>${showTag ? `<span class="tag">${esc(it.tag)}</span>` : ""}${esc(it.title)}</b><div class="meta">${esc(it.source)}${it.time ? (it.source ? ", " : "") + ago(it.time) : ""}</div></a>`;
+function listFor(topics, max, showTag) {
+  const items = mergeItems(topics, max), busy = topics.some(t => L["f:" + t]), bad = topics.every(t => E["f:" + t]);
+  if (items.length) return items.map(i => item(i, showTag)).join("");
+  if (busy) return skel();
+  if (bad) return `<div class="err">Couldn't load stories. Check your connection. <button class="chip" data-act="refresh">Try again</button></div>`;
+  return skel();
+}
+
+function homeView() {
+  const now = new Date(), w = D.cache.wx?.data, cur = w?.current;
+  const wkKm = D.runs.filter(r => (now - new Date(r.date)) / 864e5 < 7).reduce((s, r) => s + r.dist, 0) / 1000;
+  const topics = D.prefs.topics.filter(t => FEEDS[t]).slice(0, 4);
+  return `<div class="hero"><div class="sub">Guwahati</div><div class="hero-row"><div><div style="font-family:Georgia,serif;font-size:30px;font-weight:700;line-height:1.1">${now.toLocaleDateString("en-IN", { weekday: "long" })}</div><div class="sub" style="margin-top:4px">${now.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</div></div><div class="temp">${cur ? Math.round(cur.temperature_2m) + "°C" : "--"}</div></div>
+  <div style="margin-top:10px;font-size:14.5px">${cur ? `${WX(cur.weather_code)}. Rain chance today ${w.daily.precipitation_probability_max[0]}%.` : E.wx ? "Weather unavailable right now." : "Checking the sky over Guwahati..."}</div></div>
+  <div class="row" style="align-items:center;margin-top:16px;justify-content:space-between"><div><div style="font-weight:700">${wkKm.toFixed(1)} km this week</div><div class="sub">Goal: ${D.prefs.goalKm} km per run</div></div><button class="btn" data-act="tab" data-v="run">${ico("run")} Start run</button></div>
+  <h2>Top headlines</h2>${listFor(topics, 8, true)}`;
+}
+function newsView() {
+  const topics = NEWS_TABS[S.news], ix = D.cache.idx?.data;
+  let h = chips([["national", "India"], ["ne", "Assam and Northeast"], ["mkt", "Markets"], ["world", "World"]], S.news, "news");
+  if (S.news === "mkt") {
+    if (ix) h += `<div class="stats">${ix.map(x => `<div class="stat"><div class="l">${esc(x.name)}</div><div class="v" style="font-size:22px">${esc(x.value)}</div><div class="${x.pct >= 0 ? "up" : "down"}" style="font-size:13.5px;font-weight:650;display:flex;align-items:center;gap:4px">${ico(x.pct >= 0 ? "up" : "down").replace('class="i"', 'class="i" style="width:14px;height:14px"')}${x.pct >= 0 ? "+" : ""}${x.pct.toFixed(2)}%</div></div>`).join("")}</div><div class="meta" style="margin-bottom:6px">Levels can lag the live market. Check NSE or BSE before you trade.</div>`;
+    else if (L.idx) h += `<div class="sub" style="margin:10px 0">Loading index levels...</div>`;
+  }
+  return h + listFor(topics, 10, false);
+}
+function weatherView() {
+  const w = D.cache.wx?.data;
+  if (!w) return E.wx ? `<div class="err">Couldn't load the forecast. <button class="chip" data-act="refresh">Try again</button></div>` : skel();
+  const c = w.current, d = w.daily, alerts = wxAlerts(w);
+  return `<div class="hero"><div class="sub">Guwahati, Assam</div><div class="hero-row"><div class="temp">${Math.round(c.temperature_2m)}°C</div><div style="text-align:right;font-size:14.5px"><div style="font-weight:650">${WX(c.weather_code)}</div><div class="sub">Feels like ${Math.round(c.apparent_temperature)}°C</div></div></div><div class="sub" style="margin-top:10px">Humidity ${c.relative_humidity_2m}%, wind ${Math.round(c.wind_speed_10m)} km/h</div></div>
+  <h2>Rain outlook</h2><div>${d.precipitation_probability_max[0]}% chance of rain today, about ${Math.round(d.precipitation_sum[0])} mm expected.</div>
+  ${alerts.length ? alerts.map(a => `<div class="alert">${esc(a)}</div>`).join("") + `<div class="meta">Alerts are generated from forecast data. For official warnings see IMD.</div>` : `<div class="note">No heavy rain, storm or heat alerts in the next 5 days.</div>`}
+  <h2>Next 5 days</h2>${d.time.map((t, i) => `<div class="pb"><span><b>${i === 0 ? "Today" : new Date(t + "T00:00:00").toLocaleDateString("en-IN", { weekday: "short" })}</b> <span class="sub">${WX(d.weather_code[i])}</span></span><span style="text-align:right"><b>${Math.round(d.temperature_2m_max[i])}°</b> / ${Math.round(d.temperature_2m_min[i])}° <span class="sub">rain ${d.precipitation_probability_max[i]}%</span></span></div>`).join("")}`;
+}
+
+function runTrack() {
+  const d = R, P = D.prefs, goalM = P.goalKm * 1000;
+  let curPace = null; const w = d.win;
+  if (w.length > 1) { const a = w[0], b = w[w.length - 1]; if (b.t - a.t >= 8 && b.dist - a.dist >= 5) curPace = (b.t - a.t) / (b.dist - a.dist) * 1000; }
+  const avg = d.dist > 20 ? d.elapsed / d.dist * 1000 : null, speed = curPace ? 3600 / curPace : d.elapsed ? d.dist / d.elapsed * 3.6 : 0, cal = Math.round(1.036 * P.weight * d.dist / 1000);
+  const wk = weekData().total, msg = S.gpsMsg ? `<div class="note">${esc(S.gpsMsg)}</div>` : "";
+  if (d.status === "idle") return `<div class="row" style="align-items:center;margin:10px 0 14px">${ring(wk / (P.goalKm || 1), 110, `<div><div style="font-weight:700;font-size:20px">${wk.toFixed(1)}</div><div class="sub" style="font-size:11px">km, 7 days</div></div>`)}<div><div style="font-weight:700;font-size:17px">Goal: ${P.goalKm} km</div><div class="sub">Run ${P.goalKm} km in one go to hit your target.</div></div></div>${routeMap([])}${chips([["gps", "Live GPS"], ["demo", "Demo run"]], S.mode, "mode")}${S.mode === "demo" ? `<div class="note">A demo run simulates a loop around Guwahati so you can try the tracker indoors.${chips([[1, "Real time"], [10, "Fast-forward x10"]], S.mult, "mult")}</div>` : ""}${msg}<button class="btn block" data-act="start">${ico("play")} Start run</button>`;
+  if (d.status === "done") return `<h2>${d.saved ? "Run saved" : "Run too short to save"}</h2>${routeMap(d.pts)}<div class="stats"><div class="stat"><div class="v">${km(d.dist)}</div><div class="l">Distance (km)</div></div><div class="stat"><div class="v">${fmtDur(d.elapsed)}</div><div class="l">Time</div></div><div class="stat"><div class="v">${fmtPace(avg)}</div><div class="l">Average pace (min/km)</div></div><div class="stat"><div class="v">${cal}</div><div class="l">Calories (est.)</div></div></div>${d.dist >= goalM ? `<div class="note">You hit your ${P.goalKm} km goal.</div>` : ""}<button class="btn block" style="margin-top:12px" data-act="newrun">New run</button>`;
+  return `<div style="text-align:center;margin:12px 0 4px"><div class="sub">${d.status === "paused" ? "Paused" : d.mode === "demo" ? "Demo run" : "Running"}</div><div class="big">${km(d.dist)}<span style="font-size:20px;margin-left:6px">km</span></div><div class="sub" style="margin-top:6px">${fmtDur(d.elapsed)}</div></div>
+  <div style="height:8px;background:var(--mist);border-radius:4px;overflow:hidden;margin:10px 0"><div style="width:${Math.min(100, d.dist / goalM * 100)}%;height:100%;background:${d.dist >= goalM ? "var(--tea)" : "var(--red)"}"></div></div>
+  <div class="sub" style="text-align:center;margin-bottom:10px">${d.dist >= goalM ? `Goal reached. ${P.goalKm} km done.` : `${((goalM - d.dist) / 1000).toFixed(2)} km to your ${P.goalKm} km goal`}</div>${routeMap(d.pts, 170)}
+  <div class="stats"><div class="stat"><div class="v">${fmtPace(curPace)}</div><div class="l">Current pace (min/km)</div></div><div class="stat"><div class="v">${fmtPace(avg)}</div><div class="l">Average pace (min/km)</div></div><div class="stat"><div class="v">${speed.toFixed(1)}</div><div class="l">Speed (km/h)</div></div><div class="stat"><div class="v">${cal}</div><div class="l">Calories (est.)</div></div></div>${msg}
+  <div class="row" style="margin-top:16px">${d.status === "running" ? `<button class="btn ghost" style="flex:1" data-act="pause">${ico("pause")} Pause</button>` : `<button class="btn" style="flex:1" data-act="resume">${ico("play")} Resume</button>`}<button class="btn red" style="flex:1" data-act="finish">${ico("stop")} Finish</button></div>`;
+}
+function weekData() {
+  const t = new Date();
+  const days = [...Array(7)].map((_, i) => { const d = new Date(t); d.setDate(t.getDate() - (6 - i)); return { label: d.toLocaleDateString("en-IN", { weekday: "short" }), km: D.runs.filter(r => sameDay(new Date(r.date), d)).reduce((s, r) => s + r.dist, 0) / 1000 }; });
+  return { days, total: days.reduce((s, x) => s + x.km, 0) };
+}
+function runStats() {
+  const { days, total } = weekData(), runs = D.runs, mx = Math.max(1, ...days.map(x => x.km));
+  const totalKm = runs.reduce((s, r) => s + r.dist, 0) / 1000, longest = Math.max(0, ...runs.map(r => r.dist));
+  const f3 = runs.filter(r => r.t3200).reduce((m, r) => (m == null || r.t3200 < m ? r.t3200 : m), null);
+  const bp = runs.filter(r => r.dist >= 1000).reduce((m, r) => { const p = r.dur / r.dist * 1000; return m == null || p < m ? p : m; }, null);
+  const trend = runs.filter(r => r.dist >= 500).slice(0, 10).reverse().map(r => r.dur / r.dist * 1000);
+  const bars = days.map((x, i) => { const bh = x.km / mx * 82; return `<rect x="${i * 45 + 8}" y="${96 - bh}" width="28" height="${Math.max(bh, 2)}" rx="6" fill="${x.km > 0 ? "#2F6B4F" : "#D3DFDD"}"/>${x.km > 0 ? `<text x="${i * 45 + 22}" y="${90 - bh}" text-anchor="middle" font-size="11" fill="#0E2A33">${x.km.toFixed(1)}</text>` : ""}<text x="${i * 45 + 22}" y="116" text-anchor="middle" font-size="11" fill="#5E747A">${x.label}</text>`; }).join("");
+  let tr = `<div class="sub">Complete two runs to see your pace trend.</div>`;
+  if (trend.length >= 2) {
+    const mn = Math.min(...trend), mxp = Math.max(...trend), sp = mxp - mn || 1, pts = trend.map((p, i) => [14 + i * 292 / (trend.length - 1), 14 + (p - mn) / sp * 82]);
+    tr = `<svg viewBox="0 0 320 110" width="100%" role="img" aria-label="Average pace for your last runs"><polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="#C62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>${pts.map(p => `<circle cx="${p[0]}" cy="${p[1]}" r="4" fill="#C62828"/>`).join("")}</svg><div class="sub">Higher on the chart means a slower pace. From ${fmtPace(trend[0])} to ${fmtPace(trend[trend.length - 1])} per km over your last ${trend.length} runs.</div>`;
+  }
+  return `<h2>Weekly mileage</h2><svg viewBox="0 0 320 130" width="100%" role="img" aria-label="Kilometres run in the last 7 days">${bars}</svg><div class="sub">${total.toFixed(1)} km in the last 7 days, ${totalKm.toFixed(1)} km all time</div>
+  <h2>Personal bests</h2><div class="pb"><span>Longest run</span><b>${longest ? km(longest) + " km" : "--"}</b></div><div class="pb"><span>Fastest 3.2 km</span><b>${f3 ? fmtDur(f3) : "--"}</b></div><div class="pb"><span>Best average pace</span><b>${bp ? fmtPace(bp) + " /km" : "--"}</b></div><div class="pb"><span>Runs completed</span><b>${runs.length}</b></div>
+  <h2>Pace progress</h2>${tr}`;
+}
+function runView() {
+  let h = `<h1>Run</h1>` + chips([["track", "Track"], ["history", "History"], ["stats", "Stats"]], S.runView, "rv");
+  if (S.runView === "track") return h + `<div id="live">${runTrack()}</div>`;
+  if (S.runView === "stats") return h + runStats();
+  if (!D.runs.length) return h + `<div class="note">No runs yet. Finish your first run and it will show up here.</div>`;
+  return h + D.runs.map(r => `<div class="item"><button style="width:100%;text-align:left" data-act="open" data-v="${r.id}"><b>${km(r.dist)} km in ${fmtDur(r.dur)}</b><div class="meta">${new Date(r.date).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" })}, pace ${fmtPace(r.dur / r.dist * 1000)} per km, ${r.cal} kcal${r.demo ? ", demo" : ""}</div></button>${String(S.open) === String(r.id) ? `<div style="margin-top:10px">${routeMap(r.pts, 170)}</div>` : ""}</div>`).join("") + `<button class="chip" style="margin-top:14px" data-act="clear">Clear history</button>`;
+}
+function feedView() {
+  const P = D.prefs;
+  return `<h1>My feed</h1><div class="sub">Pick topics and Zero one puts them first on your home screen.</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin:14px 0">${TOPICS.map(t => `<button class="chip${P.topics.includes(t) ? " on" : ""}" data-act="topic" data-v="${t}">${t}</button>`).join("")}</div>
+  <h2>Morning briefing</h2>
+  <div class="field"><div><b>Daily reminder</b><div class="sub">A nudge to read your briefing</div></div><button class="switch${P.notify ? " on" : ""}" role="switch" aria-checked="${P.notify}" aria-label="Daily reminder" data-act="notify"></button></div>
+  <div class="field"><span>Remind me at</span><input type="time" value="${P.notifyTime}" data-pref="notifyTime"></div>
+  ${P.notify ? `<button class="chip" style="margin-top:10px" data-act="test">Send a test</button>` : ""}
+  ${S.msg ? `<div class="note">${esc(S.msg)}</div>` : ""}
+  <div class="meta">Reminders show when Zero one is running in the background or when you open it after your set time.</div>
+  <h2>Running</h2>
+  <div class="field"><span>Run goal (km)</span><input type="number" min="0.5" step="0.1" value="${P.goalKm}" data-pref="goalKm"></div>
+  <div class="field"><span>Body weight (kg), for calories</span><input type="number" min="30" step="1" value="${P.weight}" data-pref="weight"></div>
+  <h2>Install</h2><div class="sub">Open Chrome's menu and choose Install app to add Zero one to your home screen.</div>`;
+}
+
+const TITLES = { home: "Zero one", news: "News", weather: "Weather", study: "SSC prep", run: "Run", feed: "My feed" };
+function render(soft) {
+  if (soft && S.tab === "feed") return;
+  if (soft && (S.tab === "run" || S.tab === "study")) return;
+  const t = S.tab, main = t === "home" ? homeView() : t === "news" ? newsView() : t === "weather" ? weatherView() : t === "run" ? runView() : t === "study" ? studyView() : feedView();
+  const canRefresh = ["home", "news", "weather"].includes(t), y = window.scrollY;
+  $("#app").innerHTML = `<div class="top"><div class="logo">01</div><div class="brand">${TITLES[t]}</div><div class="grow"></div>${T.running && !(t === "study" && S.stab === "timer") ? `<button class="chip tpill" id="tpill" data-act="gotimer" aria-label="Open timer">${fmtT(T.remaining)}</button>` : ""}<button class="icon-btn" aria-label="Quote of the day" data-act="quote">${ico("quote")}</button><button class="icon-btn" aria-label="Search" data-act="search">${ico("search")}</button>${canRefresh ? `<button class="icon-btn" aria-label="Refresh" data-act="refresh">${ico("refresh")}</button>` : ""}</div><div class="main">${main}</div><nav aria-label="Main">${[["home", "home", "Home"], ["news", "news", "News"], ["weather", "cloud", "Weather"], ["study", "book", "SSC"], ["run", "run", "Run"], ["feed", "sliders", "My feed"]].map(([k, i, l]) => `<button class="${t === k ? "on" : ""}" data-act="tab" data-v="${k}"${t === k ? ' aria-current="page"' : ""}>${ico(i)}${l}</button>`).join("")}</nav>`;
+  if (soft) window.scrollTo(0, y);
+}
+function updateLive() { const el = $("#live"); if (el && S.tab === "run" && S.runView === "track") el.innerHTML = runTrack(); }
+
+/* ============ quote of the day ============ */
+const QUOTES = [
+  { q: "The only way to do great work is to love what you do.", who: "Steve Jobs", role: "Co-founder of Apple", when: "Stanford University commencement speech, 12 June 2005", why: "Jobs had been fired from the company he started, yet he kept going because he loved the work. He told graduates that work fills a large part of life, so it is worth looking until you find work you love." },
+  { q: "The only thing we have to fear is fear itself.", who: "Franklin D. Roosevelt", role: "32nd President of the United States", when: "First inaugural address, 4 March 1933", why: "The US was deep in the Great Depression and banks were failing. He argued that panic was making the crisis worse, and asked people to trust that recovery was possible." },
+  { q: "Injustice anywhere is a threat to justice everywhere.", who: "Martin Luther King Jr.", role: "Civil rights leader", when: "Letter from Birmingham Jail, April 1963", why: "He wrote it in a jail cell, replying to clergymen who said he should wait and that outsiders shouldn't interfere. His answer was that communities are tied together, so no one can ignore wrongs happening elsewhere." },
+  { q: "Imagination is more important than knowledge.", who: "Albert Einstein", role: "Physicist", when: "Interview in The Saturday Evening Post, 26 October 1929", why: "He explained that knowledge is limited to what we already know, while imagination reaches everything that might be. For him, new ideas in science began with picturing something no one had yet proven." },
+  { q: "Education is the most powerful weapon which you can use to change the world.", who: "Nelson Mandela", role: "Anti-apartheid leader and South Africa's first Black president", when: "Launch of the Mindset Network, Johannesburg, 16 July 2003", why: "After 27 years in prison, he saw schooling as the surest way for children from poor and disadvantaged homes to change their own lives and their country." },
+  { q: "That's one small step for man, one giant leap for mankind.", who: "Neil Armstrong", role: "Commander of Apollo 11", when: "On the Moon, 20 July 1969", why: "He spoke as the first person to step onto the lunar surface. The line sets one man's single step against what the achievement meant for all humanity. He later said he meant to say \"for a man\".", s: "Neil Armstrong" },
+  { q: "At the stroke of the midnight hour, when the world sleeps, India will awake to life and freedom.", who: "Jawaharlal Nehru", role: "India's first Prime Minister", when: "Constituent Assembly, Delhi, midnight of 14 to 15 August 1947", why: "Known as the Tryst with Destiny speech, it marked India's independence from British rule. He used the image of midnight to show a country waking after long colonial rule.", s: "Tryst with Destiny speech" },
+  { q: "A journey of a thousand miles begins with a single step.", who: "Laozi", role: "Chinese philosopher, traditionally credited with the Tao Te Ching", when: "Tao Te Ching, around the 6th century BCE (traditional dating)", why: "He taught that great undertakings grow out of small, simple beginnings, so the hardest part is often just starting.", note: "Translations vary slightly." },
+  { q: "The best way to predict the future is to invent it.", who: "Alan Kay", role: "Computer scientist", when: "Said around 1971 at Xerox PARC", why: "He was telling colleagues who were designing early personal computers that waiting to see what happens is weaker than building the future yourself. His team helped shape personal computing." },
+  { q: "I've failed over and over and over again in my life. And that is why I succeed.", who: "Michael Jordan", role: "Basketball player", when: "Nike advertisement, 1997", why: "In the ad he listed thousands of missed shots and lost games. His point was that failure is part of the path to success, not the opposite of it." },
+  { q: "The miracle isn't that I finished. The miracle is that I had the courage to start.", who: "John Bingham", role: "Runner and columnist, known as The Penguin", when: "His Runner's World columns and books on running for beginners", why: "He began running as a slower, out-of-shape adult and wrote for people who feel they are too slow. His message: finishing matters less than finding the courage to begin." },
+  { q: "Ask not what your country can do for you, ask what you can do for your country.", who: "John F. Kennedy", role: "35th President of the United States", when: "Inaugural address, 20 January 1961", why: "In the middle of the Cold War he called on citizens to serve, rather than wait for the government to provide." },
+  { q: "Never give in, never, never, never.", who: "Winston Churchill", role: "British Prime Minister", when: "Speech at Harrow School, 29 October 1941", why: "Britain was at war and under heavy attack. Speaking to schoolboys, he said the lesson of the war was never to yield, except to convictions of honour and good sense.", note: "Shortened from the full line.", s: "Winston Churchill" },
+  { q: "My uncle is not greater than my country.", who: "Lachit Borphukan", role: "Ahom general", when: "Before the Battle of Saraighat, Guwahati, 1671 (as told in Assamese tradition)", why: "He had ordered his uncle to finish a defensive embankment overnight. When it was left incomplete, he punished him, saying duty to the land came before family. The story inspired his troops, and the Ahoms went on to defeat a much larger Mughal force on the Brahmaputra.", note: "Passed down through Assamese tradition and chronicles; the wording varies by telling." },
+  { q: "You have the right to work, but never to the fruit of work.", who: "Bhagavad Gita", role: "Hindu scripture, Chapter 2, verse 47", when: "Krishna's advice to Arjuna on the battlefield of Kurukshetra", why: "Arjuna hesitated before battle. Krishna told him to give full effort to his duty without being tied to the result, so that fear of failure does not stop action.", note: "A common English rendering; translations vary.", s: "Bhagavad Gita" },
+  { q: "Arise, awake, and stop not till the goal is reached.", who: "Swami Vivekananda", role: "Monk and philosopher", when: "Popularly attributed to his talks to young Indians in the 1890s", why: "He was adapting a call from the Katha Upanishad urging people to wake from inertia. He told the youth that strength and persistence would build the nation.", note: "Adapted from the Katha Upanishad; the exact first source is debated." },
+  { q: "Dream, dream, dream. Dreams transform into thoughts, and thoughts result in action.", who: "A. P. J. Abdul Kalam", role: "Scientist and 11th President of India", when: "His addresses to students and young people", why: "He believed young people should aim high, since a dream becomes a plan and a plan becomes work. He often spoke to students in this spirit.", note: "Quoted from his speeches; exact wording varies by source." },
+  { q: "Pain is inevitable. Suffering is optional.", who: "Haruki Murakami", role: "Novelist and marathon runner", when: "What I Talk About When I Talk About Running, 2007", why: "Writing about long-distance running, he describes a saying runners know: hurting during a hard run cannot be avoided, but how much you suffer depends on how you respond." },
+  { q: "No human is limited.", who: "Eliud Kipchoge", role: "Kenyan marathon runner", when: "INEOS 1:59 Challenge, Vienna, 12 October 2019", why: "He ran a marathon in 1:59:40, the first time anyone had gone under two hours, though it was not an official record because of the pacing setup. It is his motto for believing in what people can do." },
+  { q: "If you want to run, run a mile. If you want to experience a different life, run a marathon.", who: "Emil Zatopek", role: "Czechoslovak long-distance runner", when: "Attributed to him; he won the 5,000 m, 10,000 m and marathon at the 1952 Helsinki Olympics", why: "He felt the marathon changes a person in a way shorter races do not. The line is often used to describe the commitment a marathon demands.", note: "Widely attributed; the original source is unclear." },
+  { q: "Well done is better than well said.", who: "Benjamin Franklin", role: "Statesman and writer", when: "Poor Richard's Almanack, 1737", why: "A short proverb saying that actions count for more than speeches or promises." },
+  { q: "Great things are done by a series of small things brought together.", who: "Vincent van Gogh", role: "Painter", when: "Letter to his brother Theo, 1882", why: "He was writing about the steady daily work behind his drawings and paintings, and how large results come from many small efforts.", note: "Translated from Dutch; wording varies." },
+  { q: "We must believe that we are gifted for something, and that this thing, at whatever cost, must be attained.", who: "Marie Curie", role: "Physicist and chemist, Nobel Prize winner in Physics and in Chemistry", when: "As recalled by her daughter Eve Curie in the biography Madame Curie, 1937", why: "Curie worked for years in poor conditions to isolate radium. She said that belief in your own purpose is what lets you push through hardship." },
+  { q: "Government of the people, by the people, for the people, shall not perish from the earth.", who: "Abraham Lincoln", role: "16th President of the United States", when: "Gettysburg Address, 19 November 1863", why: "He spoke at the dedication of a cemetery for soldiers killed in the Civil War. He said their sacrifice should renew the country's commitment to a government that belongs to its citizens." },
+  { q: "Do or die.", who: "Mahatma Gandhi", role: "Leader of India's independence movement", when: "Quit India speech, Gowalia Tank, Bombay, 8 August 1942", why: "He gave it as a mantra at the start of the Quit India Movement, asking Indians to either win freedom or give everything trying." },
+  { q: "Educate, agitate, organise.", who: "Dr. B. R. Ambedkar", role: "Jurist, social reformer and chief architect of India's Constitution", when: "A slogan associated with his movement for the rights of oppressed communities", why: "He argued that learning must come first, then peaceful protest, then unity and organisation to win rights and dignity.", note: "Often quoted as \"Educate, Agitate, Organise\"." },
+  { q: "Where the mind is without fear and the head is held high.", who: "Rabindranath Tagore", role: "Poet and Nobel Prize winner in Literature", when: "Poem in Gitanjali, 1910 (English version published 1912)", why: "Writing under British rule, he imagined a country free from fear, narrow habits and closed thinking, where knowledge is open to all. It reads like a prayer for the nation to awaken." },
+];
+const todayKey = () => new Date().toDateString();
+function quoteOfDay() {
+  const n = new Date(), d = Math.floor((new Date(n.getFullYear(), n.getMonth(), n.getDate()) - new Date(2026, 0, 1)) / 864e5);
+  return QUOTES[((d % QUOTES.length) + QUOTES.length) % QUOTES.length];
+}
+function quoteSheet() {
+  const q = quoteOfDay(), n = new Date();
+  return `<div class="bg" data-act="bg"><div class="sheet" role="dialog" aria-modal="true" aria-label="Quote of the day"><div class="grab"></div>
+  <div class="sub">Quote of the day, ${n.toLocaleDateString("en-IN", { day: "numeric", month: "long" })}</div>
+  <blockquote class="qt">\u201C${esc(q.q)}\u201D</blockquote>
+  <div class="qrow"><div class="ql">Who said it</div><b>${esc(q.who)}</b><div class="sub">${esc(q.role)}</div></div>
+  <div class="qrow"><div class="ql">When and where</div>${esc(q.when)}</div>
+  <div class="qrow"><div class="ql">The reason behind it</div>${esc(q.why)}</div>
+  ${q.note ? `<div class="meta">${esc(q.note)}</div>` : ""}
+  ${S.toast ? `<div class="note">${esc(S.toast)}</div>` : ""}
+  <div class="row" style="margin-top:16px"><button class="btn ghost" style="flex:1" data-act="shareq">Share</button><button class="btn" style="flex:1" data-act="learn">Learn more</button></div>
+  <button class="chip" style="margin:12px auto 0;display:block" data-act="closesheet">Close</button></div></div>`;
+}
+async function shareQuote() {
+  const q = quoteOfDay(), t = `\u201C${q.q}\u201D \u2014 ${q.who}`;
+  try { if (navigator.share) { await navigator.share({ title: "Zero one", text: t }); return; } await navigator.clipboard.writeText(t); S.toast = "Quote copied."; }
+  catch (e) { return; }
+  renderSheet();
+}
+
+/* ============ search ============ */
+async function fetchWiki(q) {
+  const s = await (await fetch(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(q)}&srlimit=1&format=json&origin=*`)).json();
+  const t = s.query.search[0] && s.query.search[0].title; if (!t) return null;
+  const r = await (await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(t.replace(/ /g, "_")))).json();
+  if (!r.extract) return null;
+  return { title: r.title, text: r.extract.length > 500 ? r.extract.slice(0, 500).replace(/\s+\S*$/, "") + "\u2026" : r.extract, url: (r.content_urls && (r.content_urls.mobile || r.content_urls.desktop) || {}).page || "", img: (r.thumbnail && r.thumbnail.source) || "" };
+}
+function runSearch(q) {
+  q = (q || "").trim(); if (!q) return;
+  const id = ++S.sid; S.sr = { q };
+  D.prefs.recent = [q, ...(D.prefs.recent || []).filter(x => x.toLowerCase() !== q.toLowerCase())].slice(0, 6); save();
+  updateRes();
+  const ok = () => S.sid === id && S.sr;
+  fetchWiki(q).then(w => { if (ok()) { S.sr.wiki = w; updateRes(); } }).catch(() => { if (ok()) { S.sr.wiki = null; updateRes(); } });
+  fetchRss(gs(q)).then(n => { if (ok()) { S.sr.news = n; updateRes(); } }).catch(() => { if (ok()) { S.sr.news = []; S.sr.newsErr = true; updateRes(); } });
+}
+function searchResults() {
+  const s = S.sr, rec = D.prefs.recent || [];
+  if (!s || (s.wiki === undefined && s.news === undefined && !s.q)) {
+    return rec.length ? `<h2>Recent searches</h2><div style="display:flex;flex-wrap:wrap;gap:8px">${rec.map(r => `<button class="chip" data-act="recent" data-v="${esc(r)}">${esc(r)}</button>`).join("")}</div>`
+      : `<div class="note">Search any topic. You get a quick answer from Wikipedia, the latest news stories, and a link to search the whole web.</div>`;
+  }
+  let h = "";
+  if (s.wiki) h += `<h2>Quick answer</h2><div class="ans">${s.wiki.img ? `<img src="${esc(s.wiki.img)}" alt="">` : ""}<b>${esc(s.wiki.title)}</b><p>${esc(s.wiki.text)}</p>${s.wiki.url ? `<a class="chip" href="${esc(s.wiki.url)}" target="_blank" rel="noopener">Read more on Wikipedia</a>` : ""}</div>`;
+  else if (s.wiki === undefined) h += `<h2>Quick answer</h2>${skel().split("</div>").slice(0, 3).join("</div>")}</div>`;
+  h += `<h2>In the news</h2>`;
+  if (s.news === undefined) h += skel();
+  else if (s.news.length) h += s.news.map(i => item(i, false)).join("");
+  else h += s.newsErr ? `<div class="err">Couldn't load news right now. Check your connection.</div>` : `<div class="sub">No recent stories found.</div>`;
+  h += `<a class="btn ghost block" style="margin-top:18px" href="https://www.google.com/search?q=${encodeURIComponent(s.q)}" target="_blank" rel="noopener">Search the whole web</a>`;
+  return h;
+}
+function searchSheet() {
+  return `<div class="bg full"><div class="sheet full" role="dialog" aria-modal="true" aria-label="Search">
+  <div class="srow"><input id="q" type="search" placeholder="Search news, people, places, anything" value="${esc((S.sr && S.sr.q) || "")}" autocomplete="off" enterkeyhint="search" aria-label="Search"><button class="icon-btn" aria-label="Search" data-act="dosearch">${ico("search")}</button><button class="icon-btn" aria-label="Close" data-act="closesheet">${ico("close")}</button></div>
+  <div id="sres">${searchResults()}</div></div></div>`;
+}
+function updateRes() { const el = $("#sres"); if (el && S.sheet === "search") el.innerHTML = searchResults(); }
+
+/* ============ sheets ============ */
+function renderSheet() {
+  $("#sheet").innerHTML = S.sheet === "search" ? searchSheet() : S.sheet === "quote" ? quoteSheet() : "";
+  document.body.style.overflow = S.sheet ? "hidden" : "";
+}
+function openSheet(name) {
+  S.sheet = name; S.toast = "";
+  if (name === "search") S.sr = null;
+  try { history.pushState({ sheet: 1 }, ""); } catch (e) {}
+  renderSheet();
+  if (name === "search") setTimeout(() => { const i = $("#q"); i && i.focus(); }, 60);
+}
+function closeSheet() {
+  if (!S.sheet) return;
+  if (history.state && history.state.sheet) history.back();
+  else { S.sheet = null; renderSheet(); }
+}
+window.addEventListener("popstate", () => { if (S.sheet) { S.sheet = null; renderSheet(); } });
+function maybeShowQuote() {
+  setTimeout(() => { if (D.prefs.lastQuote !== todayKey() && !S.sheet) { D.prefs.lastQuote = todayKey(); save(); openSheet("quote"); } }, 900);
+}
+
+/* ============ SSC prep: syllabus ============ */
+const SUBJECTS = [
+  { id: "q", name: "Quantitative Aptitude", info: "25 questions, 50 marks. Aim for about 22 min in the exam.", topics: [
+    ["q1", "Number System", "divisibility, factors, remainders, HCF and LCM", 240],
+    ["q2", "Simplification and Approximation", "BODMAS, surds and indices, square and cube roots", 150],
+    ["q3", "Percentage", "conversions, successive change, population and expenses", 180],
+    ["q4", "Ratio, Proportion and Partnership", "ratios, variation, sharing, partnership", 150],
+    ["q5", "Average and Ages", "average, weighted average, problems on ages", 150],
+    ["q6", "Profit, Loss and Discount", "cost and selling price, marked price, successive discount", 180],
+    ["q7", "Simple and Compound Interest", "rates, instalments, difference between SI and CI", 150],
+    ["q8", "Time and Work", "efficiency, pipes and cisterns, wages", 180],
+    ["q9", "Time, Speed and Distance", "trains, boats and streams, relative speed, races", 210],
+    ["q10", "Mixture and Alligation", "mixing two or more quantities, replacement", 90],
+    ["q11", "Algebra", "identities, linear and quadratic equations, inequalities", 210],
+    ["q12", "Geometry", "lines and angles, triangles, circles, triangle centres", 300],
+    ["q13", "Mensuration", "area, volume and surface area of 2D and 3D shapes", 240],
+    ["q14", "Trigonometry", "ratios, identities, heights and distances", 270],
+    ["q15", "Data Interpretation", "tables, bar, line and pie charts", 180],
+    ["q16", "Statistics", "mean, median, mode, range, standard deviation", 90] ] },
+  { id: "r", name: "General Intelligence and Reasoning", info: "25 questions, 50 marks. Aim for about 14 min in the exam.", topics: [
+    ["r1", "Analogy", "number, letter and word analogies", 90],
+    ["r2", "Classification (Odd One Out)", "number, letter and word groups", 60],
+    ["r3", "Series", "number, letter and mixed series", 120],
+    ["r4", "Coding and Decoding", "letter, number and symbol coding", 120],
+    ["r5", "Blood Relations", "family trees, coded relations", 90],
+    ["r6", "Direction and Distance", "turns, shortest distance, shadows", 90],
+    ["r7", "Order, Ranking and Arrangement", "rank from left and right, comparison", 90],
+    ["r8", "Syllogism", "statements and conclusions, Venn method", 120],
+    ["r9", "Venn Diagrams", "relationship diagrams, counting", 60],
+    ["r10", "Mathematical Operations", "symbol substitution, solving equations", 90],
+    ["r11", "Missing Number and Matrix", "grids, rows and columns, figures", 90],
+    ["r12", "Calendar and Clock", "day finding, angles, mirror time", 120],
+    ["r13", "Seating Arrangement and Puzzles", "linear, circular and box-based", 150],
+    ["r14", "Statement and Conclusion", "assumptions, arguments, course of action", 90],
+    ["r15", "Mirror and Water Images", "non-verbal reasoning", 60],
+    ["r16", "Paper Folding and Cutting", "non-verbal reasoning", 60],
+    ["r17", "Embedded and Counting Figures", "hidden figures, triangles and squares", 90],
+    ["r18", "Cubes and Dice", "painted cubes, dice positions", 90],
+    ["r19", "Figure Series and Completion", "pattern completion, figure matrix", 60],
+    ["r20", "Word Formation and Dictionary Order", "alphabet tests, letter positions", 60] ] },
+  { id: "e", name: "English Language and Comprehension", info: "25 questions, 50 marks. Aim for about 14 min in the exam.", topics: [
+    ["e1", "Reading Comprehension", "passages, main idea, inference, vocabulary in context", 180],
+    ["e2", "Cloze Test", "passage with blanks, context clues", 120],
+    ["e3", "Spot the Error", "grammar errors in sentences", 180],
+    ["e4", "Sentence Improvement", "choose the best replacement", 120],
+    ["e5", "Fill in the Blanks", "words, prepositions, collocations", 90],
+    ["e6", "Synonyms and Antonyms", "word meanings and opposites", 120],
+    ["e7", "Idioms and Phrases", "meaning and use", 120],
+    ["e8", "One Word Substitution", "single word for a phrase", 90],
+    ["e9", "Spelling and Confused Words", "commonly misspelt and confused words", 60],
+    ["e10", "Active and Passive Voice", "all tenses, modals", 90],
+    ["e11", "Direct and Indirect Speech", "reporting verbs, tense changes", 90],
+    ["e12", "Para Jumbles and Sentence Rearrangement", "ordering sentences", 90],
+    ["e13", "Tenses and Subject-Verb Agreement", "forms, rules, exceptions", 180],
+    ["e14", "Articles, Prepositions and Conjunctions", "usage rules", 120],
+    ["e15", "Nouns, Pronouns, Adjectives and Adverbs", "parts of speech, degrees of comparison", 120] ] },
+  { id: "g", name: "General Awareness", info: "25 questions, 50 marks. Aim for about 10 min in the exam.", topics: [
+    ["g1", "Ancient India", "Indus Valley, Vedic age, Mauryas, Guptas", 150],
+    ["g2", "Medieval India", "Delhi Sultanate, Mughals, Bhakti and Sufi, Ahom kingdom", 150],
+    ["g3", "Modern India and Freedom Struggle", "1857, Congress, Gandhian movements, independence", 240],
+    ["g4", "Indian Geography", "rivers, climate, soils, resources, states and capitals", 210],
+    ["g5", "World Geography", "continents, oceans, major features", 120],
+    ["g6", "Indian Polity", "Constitution, rights and duties, Parliament, judiciary", 240],
+    ["g7", "Indian Economy", "basic concepts, budget, banking, taxes, schemes", 180],
+    ["g8", "Physics", "motion, force, light, sound, electricity", 150],
+    ["g9", "Chemistry", "matter, acids and bases, metals, everyday chemistry", 150],
+    ["g10", "Biology and Human Body", "cells, systems, diseases, nutrition, plants", 180],
+    ["g11", "Environment and Ecology", "ecosystems, pollution, biodiversity, climate change", 90],
+    ["g12", "Art, Culture and Heritage", "dances, festivals, monuments, literature", 90],
+    ["g13", "Static GK", "books, awards, important days, sports, organisations", 180],
+    ["g14", "Current Affairs", "last 6 to 12 months of national and world events", 240] ] },
+  { id: "c", name: "Computer Knowledge (Tier 2)", info: "A qualifying module in Tier 2, not part of Tier 1.", topics: [
+    ["c1", "Computer Basics and Hardware", "parts of a computer, memory, input and output devices", 90],
+    ["c2", "Operating Systems and MS Office", "Windows, Word, Excel, PowerPoint, shortcuts", 120],
+    ["c3", "Internet, Email and Networking", "browsers, protocols, email, network types", 90],
+    ["c4", "Cyber Security and Common Terms", "viruses, firewalls, cyber crime, abbreviations", 60] ] },
+].map(s => ({ ...s, topics: s.topics.map(([id, name, sub, min]) => ({ id, name, sub, min })) }));
+const ALLT = SUBJECTS.flatMap(s => s.topics);
+const tById = id => ALLT.find(t => t.id === id);
+const fmtMin = m => { m = Math.round(m); return m < 60 ? `${m} min` : m % 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m / 60} h`; };
+const fmtT = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60; return h ? `${h}:${pad(m)}:${pad(x)}` : `${pad(m)}:${pad(x)}`; };
+const topicDoneMin = t => (D.study.done[t.id] ? t.min : Math.min(t.min, (D.study.spent[t.id] || 0) / 60));
+function subjStats(s) {
+  return { planned: s.topics.reduce((a, t) => a + t.min, 0), done: s.topics.reduce((a, t) => a + topicDoneMin(t), 0), cnt: s.topics.filter(t => D.study.done[t.id]).length };
+}
+function topicRow(t) {
+  const dn = D.study.done[t.id], sp = Math.round((D.study.spent[t.id] || 0) / 60);
+  return `<div class="trow"><button class="chk${dn ? " on" : ""}" role="checkbox" aria-checked="${!!dn}" aria-label="Mark ${esc(t.name)} done" data-act="done" data-v="${t.id}">${dn ? ico("check") : ""}</button>
+  <div class="tb"><b>${esc(t.name)}</b><div class="meta" style="margin-top:2px">${esc(t.sub)}</div><div class="meta">Plan: ${fmtMin(t.min)}${sp ? `, studied ${fmtMin(sp)}` : ""}</div></div>
+  <button class="pbtn" aria-label="Start timer for ${esc(t.name)}" data-act="tstart" data-v="${t.id}">${ico("play")}</button></div>`;
+}
+function syllabusView() {
+  return `<div class="sub" style="margin-top:6px">SSC CGL Tier 1, the first computer-based stage</div>
+  <div class="stats"><div class="stat"><div class="v">100</div><div class="l">Questions in 4 sections</div></div><div class="stat"><div class="v">200</div><div class="l">Marks, 2 per question</div></div><div class="stat"><div class="v">60 min</div><div class="l">Total time</div></div><div class="stat"><div class="v">-0.5</div><div class="l">For each wrong answer</div></div></div>
+  <div class="note">Study times are suggestions for one full learning pass with practice. Tap the play button on a topic to start a timer for it, and tick the circle when you finish. Tier 2 asks harder questions on the same topics. Check ssc.gov.in for the latest notice, as patterns can change.</div>
+  ${SUBJECTS.map(s => {
+    const st = subjStats(s), open = S.subj === s.id;
+    return `<div class="subj"><button class="shead" data-act="subj" data-v="${s.id}" aria-expanded="${open}"><div><b>${esc(s.name)}</b><div class="meta">${esc(s.info)}</div><div class="meta">${st.cnt} of ${s.topics.length} topics done, ${fmtMin(st.done)} of ${fmtMin(st.planned)}</div></div><span class="chev">${open ? "\u2212" : "+"}</span></button><div class="pbar"><i style="width:${(st.done / st.planned * 100).toFixed(1)}%"></i></div>${open ? s.topics.map(topicRow).join("") : ""}</div>`;
+  }).join("")}`;
+}
+
+/* ============ timer ============ */
+let T = D.timer || (D.timer = { label: "Timer", topicId: null, total: 1500, remaining: 1500, running: false, endAt: 0, counted: 0, done: false });
+let tInt = null, twake = null, AC = null;
+function bank() {
+  const el = T.total - T.remaining, add = el - T.counted;
+  if (add > 0) { if (T.topicId) D.study.spent[T.topicId] = (D.study.spent[T.topicId] || 0) + add; T.counted = el; }
+}
+async function lockTm() { if (D.prefs.tmWake === false) return; try { twake = await navigator.wakeLock.request("screen"); } catch (e) {} }
+function releaseTm() { try { twake && twake.release(); } catch (e) {} twake = null; }
+function beep() {
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume();
+    [0, 0.5, 1].forEach(t => { const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = 880; g.gain.value = 0.25; o.connect(g); g.connect(AC.destination); o.start(AC.currentTime + t); o.stop(AC.currentTime + t + 0.3); }); } catch (e) {}
+}
+function haltTimer() {
+  if (!T.running) return;
+  T.remaining = Math.max(0, Math.ceil((T.endAt - Date.now()) / 1000));
+  T.running = false; clearInterval(tInt); bank(); releaseTm();
+}
+function timerDone() {
+  T.running = false; T.remaining = 0; T.done = true; clearInterval(tInt); bank(); releaseTm(); save();
+  try { navigator.vibrate && navigator.vibrate([300, 150, 300, 150, 600]); } catch (e) {}
+  beep(); showNote("Time is up: " + T.label); render();
+}
+function timerTick() {
+  if (!T.running) return;
+  T.remaining = Math.max(0, Math.ceil((T.endAt - Date.now()) / 1000));
+  if (T.remaining <= 0) { timerDone(); return; }
+  const el = $("#tm"); if (el && S.tab === "study" && S.stab === "timer") el.innerHTML = timerBody();
+  const p = $("#tpill"); if (p) p.textContent = fmtT(T.remaining);
+  if (T.remaining % 15 === 0) { bank(); save(); }
+}
+function startTimer() {
+  if (T.done || T.remaining <= 0) { T.remaining = T.total; T.counted = 0; T.done = false; }
+  T.running = true; T.endAt = Date.now() + T.remaining * 1000;
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume(); } catch (e) {}
+  clearInterval(tInt); tInt = setInterval(timerTick, 1000); lockTm(); save(); render();
+}
+function pauseTimer() { haltTimer(); save(); render(); }
+function resetTimer() { haltTimer(); bank(); T.remaining = T.total; T.counted = 0; T.done = false; save(); render(); }
+function setTimer(min, label, topicId) {
+  haltTimer(); bank();
+  T.total = Math.round(min * 60); T.remaining = T.total; T.counted = 0; T.label = label || "Timer"; T.topicId = topicId || null; T.done = false; T.running = false;
+  save(); render();
+}
+function startTopic(id) {
+  const t = tById(id); if (!t) return;
+  haltTimer(); bank();
+  const left = Math.max(5, t.min - Math.round((D.study.spent[id] || 0) / 60));
+  T.total = left * 60; T.remaining = T.total; T.counted = 0; T.label = t.name; T.topicId = id; T.done = false;
+  S.tab = "study"; S.stab = "timer"; window.scrollTo(0, 0); startTimer();
+}
+function initTimer() {
+  if (!T.running) return;
+  T.remaining = Math.ceil((T.endAt - Date.now()) / 1000);
+  if (T.remaining <= 0) { T.remaining = 0; T.running = false; T.done = true; bank(); save(); }
+  else { tInt = setInterval(timerTick, 1000); lockTm(); }
+}
+function timerBody() {
+  const size = 240, r = 108, c = 2 * Math.PI * r, frac = T.total ? T.remaining / T.total : 0;
+  return `<div class="tring"><svg width="${size}" height="${size}" style="transform:rotate(-90deg)"><circle cx="120" cy="120" r="${r}" fill="none" stroke="#E3ECEA" stroke-width="10"/><circle cx="120" cy="120" r="${r}" fill="none" stroke="${T.done ? "#C62828" : "#2F6B4F"}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - frac)}"/></svg>
+  <div class="tin"><div class="sub">${esc(T.label)}</div><div class="big" style="font-size:50px;margin:6px 0">${fmtT(T.remaining)}</div>${T.done ? `<div style="color:var(--red);font-weight:700">Time is up</div>` : `<div class="sub">${T.running ? "Counting down" : T.remaining < T.total ? "Paused" : "Ready"}</div>`}</div></div>`;
+}
+function timerView() {
+  const presets = [5, 10, 15, 25, 45, 60, 90], wake = D.prefs.tmWake !== false;
+  return `<div id="tm">${timerBody()}</div>
+  <div class="row" style="margin:6px 0 4px">${T.running ? `<button class="btn ghost" style="flex:1" data-act="tgo">${ico("pause")} Pause</button>` : `<button class="btn" style="flex:1" data-act="tgo">${ico("play")} ${T.done || T.remaining <= 0 ? "Start again" : T.remaining < T.total ? "Resume" : "Start"}</button>`}<button class="btn ghost" data-act="treset">Reset</button></div>
+  ${T.topicId ? `<div class="note">Studying <b>${esc(T.label)}</b>. ${D.study.done[T.topicId] ? "Marked done." : `<button class="chip" style="margin-top:8px" data-act="tdone">Mark topic done</button>`}</div>` : ""}
+  <h2>Set the time</h2>${chips(presets.map(m => [m, m + " min"]), T.topicId ? "" : Math.round(T.total / 60), "tset")}
+  <div class="meta">A good rhythm for long topics: 25 minutes of focus, then a 5 minute break.</div>
+  <div class="field"><span>Custom minutes</span><div class="row" style="align-items:center"><input id="cm" type="number" min="1" max="600" placeholder="e.g. 40" style="width:90px"><button class="chip" data-act="tcustom">Set</button></div></div>
+  <div class="field"><div><b>Keep screen on</b><div class="sub">While the timer runs</div></div><button class="switch${wake ? " on" : ""}" role="switch" aria-checked="${wake}" aria-label="Keep screen on" data-act="twake"></button></div>
+  <div class="meta">When time is up you get a sound and vibration, plus a notification if reminders are enabled in My feed. Keep Zero one open so the alert fires on time.</div>`;
+}
+function progressView() {
+  const planned = ALLT.reduce((a, t) => a + t.min, 0), done = ALLT.reduce((a, t) => a + topicDoneMin(t), 0), rem = planned - done;
+  const cnt = ALLT.filter(t => D.study.done[t.id]).length, pct = planned ? done / planned * 100 : 0, hrs = D.study.hours || 4;
+  let exam = "";
+  if (D.study.examDate) {
+    const dl = Math.ceil((new Date(D.study.examDate + "T00:00:00") - new Date(new Date().toDateString())) / 864e5);
+    exam = dl < 0 ? "That exam date has passed." : dl === 0 ? "Your exam is today." : `${dl} days to your exam. To finish the syllabus by then, plan about ${(rem / 60 / dl).toFixed(1)} h of study a day.`;
+  }
+  return `<div class="row" style="align-items:center;margin:12px 0">${ring(pct / 100, 110, `<div><div style="font-weight:700;font-size:22px">${Math.round(pct)}%</div><div class="sub" style="font-size:11px">complete</div></div>`)}<div><div style="font-weight:700;font-size:17px">${cnt} of ${ALLT.length} topics done</div><div class="sub">${fmtMin(done)} of ${fmtMin(planned)} planned study time</div></div></div>
+  ${SUBJECTS.map(s => { const st = subjStats(s); return `<div style="margin:12px 0"><div style="display:flex;justify-content:space-between"><b>${esc(s.name)}</b><span class="sub">${Math.round(st.done / st.planned * 100)}%</span></div><div class="pbar"><i style="width:${(st.done / st.planned * 100).toFixed(1)}%"></i></div></div>`; }).join("")}
+  <h2>Your plan</h2>
+  <div class="field"><span>Study hours per day</span><input type="number" min="0.5" step="0.5" value="${hrs}" data-sp="hours"></div>
+  <div class="field"><span>Exam date</span><input type="date" value="${esc(D.study.examDate || "")}" data-sp="examDate"></div>
+  <div class="note">${rem > 0 ? `At ${hrs} h a day, you need about ${Math.ceil(rem / 60 / hrs)} more days to cover the remaining ${fmtMin(rem)}.` : "You have covered the whole syllabus. Keep revising with mock tests."}${exam ? `<br><br>${esc(exam)}` : ""}</div>
+  <button class="chip" style="margin-top:6px" data-act="resetstudy">Reset study progress</button>`;
+}
+function studyView() {
+  const h = `<h1>SSC prep</h1>` + chips([["syllabus", "Syllabus"], ["timer", "Timer"], ["progress", "Progress"]], S.stab, "stab");
+  return h + (S.stab === "timer" ? timerView() : S.stab === "progress" ? progressView() : syllabusView());
+}
+
+/* ============ notifications ============ */
+async function showNote(body) {
+  try { const reg = await navigator.serviceWorker.ready; await reg.showNotification("Zero one", { body, icon: "icon-192.png", badge: "icon-192.png" }); return true; } catch (e) { return false; }
+}
+function checkReminder() {
+  const P = D.prefs; if (!P.notify || typeof Notification === "undefined" || Notification.permission !== "granted") return;
+  const n = new Date(), hm = `${pad(n.getHours())}:${pad(n.getMinutes())}`, key = n.toDateString();
+  if (hm >= P.notifyTime && P.lastNotified !== key) { P.lastNotified = key; save(); showNote("Your morning briefing is ready."); }
+}
+setInterval(checkReminder, 30000);
+
+/* ============ actions ============ */
+function refreshCurrent(force) {
+  if (S.tab === "home") { D.prefs.topics.filter(t => FEEDS[t]).slice(0, 4).forEach(t => loadFeed(t, force)); loadWx(force); }
+  else if (S.tab === "news") { NEWS_TABS[S.news].forEach(t => loadFeed(t, force)); if (S.news === "mkt") loadIdx(force); }
+  else if (S.tab === "weather") loadWx(force);
+}
+const ACT = {
+  tab: v => { S.tab = v; render(); window.scrollTo(0, 0); refreshCurrent(false); },
+  news: v => { S.news = v; render(); refreshCurrent(false); },
+  rv: v => { S.runView = v; render(); },
+  mode: v => { S.mode = v; render(); },
+  mult: v => { S.mult = +v; render(); },
+  refresh: () => refreshCurrent(true),
+  stab: v => { S.stab = v; render(); },
+  subj: v => { S.subj = S.subj === v ? null : v; render(); },
+  done: v => { if (D.study.done[v]) delete D.study.done[v]; else D.study.done[v] = true; save(); render(); },
+  tstart: startTopic,
+  tgo: () => (T.running ? pauseTimer() : startTimer()),
+  treset: resetTimer,
+  tset: v => setTimer(+v, "Timer", null),
+  tcustom: () => { const m = parseFloat(($("#cm") || {}).value); if (m > 0 && m <= 600) setTimer(m, "Timer", null); },
+  tdone: () => { if (T.topicId) { D.study.done[T.topicId] = true; save(); render(); } },
+  twake: () => { D.prefs.tmWake = !(D.prefs.tmWake !== false); save(); if (!D.prefs.tmWake) releaseTm(); else if (T.running) lockTm(); render(); },
+  gotimer: () => { S.tab = "study"; S.stab = "timer"; render(); window.scrollTo(0, 0); },
+  resetstudy: () => { if (confirm("Clear all ticked topics and study time?")) { haltTimer(); D.study.done = {}; D.study.spent = {}; T.counted = 0; save(); render(); } },
+  search: () => openSheet("search"),
+  quote: () => openSheet("quote"),
+  closesheet: closeSheet,
+  dosearch: () => { const i = $("#q"); if (i) { runSearch(i.value); i.blur(); } },
+  recent: v => { S.sr = { q: v }; const i = $("#q"); if (i) i.value = v; runSearch(v); },
+  shareq: shareQuote,
+  learn: () => { const q = quoteOfDay(), t = q.s || q.who; S.sheet = "search"; S.sr = { q: t }; renderSheet(); runSearch(t); },
+  start: begin, pause, resume, finish,
+  newrun: () => { R = fresh(); render(); },
+  open: v => { S.open = String(S.open) === v ? null : v; render(); },
+  clear: () => { if (confirm("Delete all saved runs?")) { D.runs = []; save(); render(); } },
+  topic: v => { const t = D.prefs.topics; D.prefs.topics = t.includes(v) ? t.filter(x => x !== v) : [...t, v]; save(); render(); },
+  notify: async () => {
+    S.msg = "";
+    if (!D.prefs.notify) {
+      if (typeof Notification === "undefined") { S.msg = "This browser can't show notifications."; return render(); }
+      const p = await Notification.requestPermission();
+      if (p !== "granted") { S.msg = "Notifications are blocked. Allow them for Zero one in Android settings, then try again."; return render(); }
+    }
+    D.prefs.notify = !D.prefs.notify; save(); render();
+  },
+  test: async () => { S.msg = (await showNote("Your morning briefing is ready.")) ? "" : "Couldn't show a test notification."; render(); },
+};
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  if (b.dataset.act === "bg") { if (e.target === b) closeSheet(); return; }
+  if (ACT[b.dataset.act]) ACT[b.dataset.act](b.dataset.v);
+});
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "q") { runSearch(e.target.value); e.target.blur(); } });
+document.addEventListener("change", e => {
+  const sp = e.target.dataset.sp;
+  if (sp) { if (sp === "hours") D.study.hours = Math.max(0.5, parseFloat(e.target.value) || 4); if (sp === "examDate") D.study.examDate = e.target.value || ""; save(); render(); return; }
+  const p = e.target.dataset.pref; if (!p) return;
+  if (p === "notifyTime") D.prefs.notifyTime = e.target.value || "07:00";
+  if (p === "goalKm") D.prefs.goalKm = Math.max(0.5, parseFloat(e.target.value) || 3.2);
+  if (p === "weight") D.prefs.weight = Math.max(30, parseFloat(e.target.value) || 65);
+  save();
+});
+
+/* ============ start ============ */
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+initTimer(); render(); refreshCurrent(false); checkReminder(); maybeShowQuote();
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://zbhivigjhrzqflkylwbw.supabase.co";
+const SUPABASE_KEY = "YOUR_PUBLISHABLE_KEY_HERE";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+console.log("Supabase connected successfully!");
+</script>
+</body>
+</html>
